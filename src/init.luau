@@ -80,7 +80,7 @@ end
 	Increases state by `value`
 	Note: Val does not check if the state's type supports this operation
 	@param value
-	@return the state's own self (so you can do something like `num:add(10):div(8)`)
+	@return the state's own self
 	```luau
 	local num = Val.new(5)
 	num:add(2) -- 5+2 -> 7
@@ -95,14 +95,14 @@ end
 	Decreases state by `value`
 	Note: Val does not check if the state's type supports this operation
 	@param value
-	@return the state's own self (so you can do something like `num:add(10):div(8)`)
+	@return the state's own self
 	```luau
 	local num = Val.new(5)
 	num:sub(2) -- 5-2 -> 3
 	```
 ]=]
 function Val.sub<T>(self: Val<T>, value: any): Val<T>
-	self._value /= value
+	self._value -= value
 	return self
 end
 
@@ -110,7 +110,7 @@ end
 	Multiplies state by `value`
 	Note: Val does not check if the state's type supports this operation
 	@param value
-	@return the state's own self (so you can do something like `num:add(10):div(8)`)
+	@return the state's own self
 	```luau
 	local num = Val.new(5)
 	num:mul(2) -- 5*2 -> 10
@@ -125,7 +125,7 @@ end
 	Divides state by `value`
 	Note: Val does not check if the state's type supports this operation
 	@param value
-	@return the state's own self (so you can do something like `num:add(10):div(8)`)
+	@return the state's own self
 	```luau
 	local num = Val.new(5)
 	num:div(2) -- 5/2 -> 2.5
@@ -140,7 +140,7 @@ end
 	Floor divides state by `value`
 	Note: Val does not check if the state's type supports this operation
 	@param value
-	@return the state's own self (so you can do something like `num:add(10):div(8)`)
+	@return the state's own self
 	```luau
 	local num = Val.new(5)
 	num:idiv(2) -- 2 remainder 1 -> 2
@@ -155,7 +155,7 @@ end
 	Applies the modulus of state by `value`
 	Note: Val does not check if the state's type supports this operation
 	@param value
-	@return the state's own self (so you can do something like `num:add(10):div(8)`)
+	@return the state's own self
 	```luau
 	local num = Val.new(5)
 	num:mod(2) -- 2 remainder 1 -> 1
@@ -170,7 +170,7 @@ end
 	Exponentiates state by `value`
 	Note: Val does not check if the state's type supports this operation
 	@param value
-	@return the state's own self (so you can do something like `num:add(10):div(8)`)
+	@return the state's own self
 	```luau
 	local num = Val.new(5)
 	num:pow(2) -- 5^2 -> 25
@@ -185,7 +185,7 @@ end
 	Concatenates state by `value`
 	Note: Val does not check if the state's type supports this operation
 	@param value
-	@return the state's own self (so you can do something like `num:add(10):div(8)`)
+	@return the state's own self
 	```luau
 	local str = Val.new("Hello, ")
 	str:cat("World!") -- "Hello, " .. "World!" -> "Hello, World!"
@@ -197,7 +197,25 @@ function Val.cat<T>(self: Val<T>, value: any): Val<T>
 end
 
 --[=[
+	Toggles the state's value (value = not value)
+	Using this method on a non-boolean state will convert it into a boolean state
+	Note: Val does not check if the state's type supports this operation
+	@param value
+	@return the state's own self
+	```luau
+	local bool = Val.new(true)
+	bool:flip() -- false
+	bool:flip():flip():flip() -- true -> false -> true
+	```
+]=]
+function Val.flip<T>(self: Val<T>): Val<T>
+	self._value = (not self._value) :: any
+	return self
+end
+
+--[=[
 	Checks if the state's value is equal to the value of `other`
+	Equivalent to state:get() == other:get()
 	@param other
 	@return boolean
 	```luau
@@ -210,6 +228,82 @@ end
 ]=]
 function Val.eq<T, U>(self: Val<T>, other: Val<U>): boolean
 	return self._value == other._value
+end
+
+--[=[
+	Checks if the state's value is less than the value of `other`
+	Equivalent to state:get() < other:get()
+	@param other
+	@return boolean
+	```luau
+	local a = Val.new(20)
+	local b = Val.new(30)
+	local c = Val.new(10)
+	local d = Val.new(20)
+	print(a:lt(b)) -- true
+	print(a:lt(c)) -- false
+	print(a:lt(d)) -- false
+	```
+]=]
+function Val.lt<T, U>(self: Val<T>, other: Val<U>): boolean
+	return (self._value :: any) < other._value
+end
+
+--[=[
+	Checks if the state's value is less than or equal to the value of `other`
+	Equivalent to state:get() < other:get()
+	@param other
+	@return boolean
+	```luau
+	local a = Val.new(20)
+	local b = Val.new(30)
+	local c = Val.new(10)
+	local d = Val.new(20)
+	print(a:le(b)) -- true
+	print(a:le(c)) -- false
+	print(a:le(d)) -- true
+	```
+]=]
+function Val.le<T, U>(self: Val<T>, other: Val<U>): boolean
+	return (self._value :: any) <= other._value
+end
+
+--[=[
+	Checks if the state's value is greater than the value of `other`
+	Equivalent to state:get() > other:get()
+	@param other
+	@return boolean
+	```luau
+	local a = Val.new(20)
+	local b = Val.new(30)
+	local c = Val.new(10)
+	local d = Val.new(20)
+	print(a:gt(b)) -- false
+	print(a:gt(c)) -- true
+	print(a:gt(d)) -- false
+	```
+]=]
+function Val.gt<T, U>(self: Val<T>, other: Val<U>): boolean
+	return (self._value :: any) > other._value
+end
+
+--[=[
+	Checks if the state's value is greater than or equal to the value of `other`
+	Equivalent to state:get() > other:get()
+	@param other
+	@return boolean
+	```luau
+	local a = Val.new(20)
+	local b = Val.new(30)
+	local c = Val.new(10)
+	local d = Val.new(20)
+	print(a:ge(b)) -- false
+	print(a:ge(c)) -- true
+	print(a:ge(d)) -- true
+	```
+]=]
+function Val.ge<T, U>(self: Val<T>, other: Val<U>): boolean
+	return (self._value :: any) >= other._value
 end
 
 --[=[

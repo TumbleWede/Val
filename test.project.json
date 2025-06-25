@@ -1,0 +1,24 @@
+{
+	"name": "Val-test",
+	"tree": {
+		"$className": "DataModel",
+		"TestService": {
+			"$className": "TestService",
+			"$properties": {
+				"ExecuteWithStudioRun": true
+			},
+			"TestEZ": {
+				"$path": "testez/src"
+			},
+			"ValTests": {
+				"$path": "test.server.luau",
+				"Val": {
+					"$path": "src"
+				},
+				"Val.spec": {
+					"$path": "Val.spec.luau"
+				}
+			}
+		}
+	}
+}
