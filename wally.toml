@@ -1,0 +1,8 @@
+[package]
+name = "tumblewede/val"
+description = "A very simple, lightweight state container library."
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
