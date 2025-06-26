@@ -11,6 +11,9 @@ return function()
 
 			local bool = Val.new(true)
 			expect(bool:get()).to.equal(true)
+
+			local n = Val.none()
+			expect(n:get()).never.to.be.ok()
 		end)
 
 		it("should change values", function()
@@ -88,8 +91,102 @@ return function()
 			expect(b:ge(a)).to.equal(true)
 			expect(a:ge(c)).to.equal(false)
 			expect(c:ge(a)).to.equal(true)
+		end)
 
-			
+		it("should support observers", function()
+			local x = Val.new(10)
+			local new, old, instant
+			local disconnect = x:on(function(newValue, oldValue, immediate)
+				new = newValue
+				old = oldValue
+				instant = immediate
+			end, true)
+			expect(new).to.equal(10)
+			expect(old).to.equal(10)
+			expect(instant).to.equal(true)
+			x:set(20)
+			expect(new).to.equal(20)
+			expect(old).to.equal(10)
+			expect(instant).to.equal(false)
+			x:set(30)
+			expect(new).to.equal(30)
+			expect(old).to.equal(20)
+			expect(instant).to.equal(false)
+			disconnect()
+			x:set(10)
+			expect(new).to.equal(30)
+			expect(old).to.equal(20)
+			expect(instant).to.equal(false)
+		end)
+
+		it("should destroy itself when killed", function()
+			local x = Val.new(2)
+			expect(x:isdead()).to.equal(false)
+			expect(Val.isdead(x)).to.equal(false)
+			x:die()
+			expect(function()
+				x:die()
+			end).never.to.throw()
+			expect(function()
+				x:set(6)
+			end).to.throw()
+			expect(x:isdead()).to.equal(true)
+			expect(Val.isdead(x)).to.equal(true)
+
+			local y = Val.new(true)
+			expect(function()
+				y:die(true)
+			end).never.to.throw()
+
+			local a = Val.new(10)
+			local disconnect = a:on(function() end)
+			a:die()
+			expect(function()
+				disconnect()
+			end).never.to.throw()
+		end)
+	end)
+
+	describe("advanced states", function()
+		it("should support states within states", function()
+			-- Scope array example
+			local waypoints = Val.scope {
+				Val.new(Vector3.new(2, 6, -3)),
+				Val.new(Vector3.new(9, -4, 8)),
+				Val.new(Vector3.new(-5, 8, 2)),
+				Val.new(Vector3.new(-7, 2, -1)),
+			}
+
+			waypoints:die() -- kills all the Vector3 states inside the scope
+		end)
+
+		it("should support iteration", function()
+			local t = Val.scope {1, 2, 3, 4, 5, 6}
+
+			for i, v in t do
+				expect(i).never.to.equal("_value")
+				expect(i).never.to.equal("_listeners")
+				expect(i).never.to.equal("_dependents")
+				expect(i).never.to.equal("_disconnects")
+				expect(i).never.to.equal("set")
+			end
+
+			t.bad = "bad"
+
+			for i, v in ipairs(t) do
+				expect(i).never.to.equal("_value")
+				expect(i).never.to.equal("_listeners")
+				expect(i).never.to.equal("_dependents")
+				expect(i).never.to.equal("_disconnects")
+				expect(i).never.to.equal("set")
+				expect(i).never.to.equal("bad")
+			end
+
+			expect(#t).to.equal(6)
+			t:die()
+			for i, v in t do
+				print(i, v)
+			end
 		end)
 	end)
 end

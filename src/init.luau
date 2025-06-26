@@ -5,6 +5,20 @@
 ]=]
 local Val = {}
 Val.__index = Val
+Val.__iter = function(self)
+	local function iterator(_, key)
+		repeat
+			local value
+			key, value = next(self, key)
+			if key == "_value" or key == "_listeners" or key == "_dependents" or key == "_disconnects" or key == "set" then continue end
+			return key, value
+		until key == nil
+
+		return nil, nil
+	end
+
+	return iterator, self
+end
 
 export type Val<T> = typeof(setmetatable({} :: {
 	_value: T,
@@ -525,6 +539,41 @@ function Val.batch(fn: ((Val<any>, any) -> ()) -> ())
 	end
 end
 
+--[=[
+	Creates a state with no value, where `values` are stored as fields directly inside the state itself rather than in its value.
+	When the scope state dies, all of its contents die with it unless a true is passed into the first optional parameter (state:die(true))
+	Any value inside the scope table that isn't a Val object will be dereferenced rather than destroyed when the scope dies
+	If iterating through a scope, always use either generic iteration (for i, v in state do) or ipairs to avoid iterating through built-in keys.
+	```luau
+	-- Scope dictionary example
+	local rect = Val.scope {
+		pos = Val.new(Vector2.new(6, 3)),
+		size = Val.new(Vector2.new(4, 2))
+	}
+	print(rect:get()) -- nil
+	rect:die() -- pos and size also die
+	-- Equivalent to:
+	local rect = Val.none()
+	rect.pos = Val.new(Vector2.new(6, 3))
+	rect.size = Val.new(Vector2.new(4, 2))
+	print(rect:get()) -- nil
+	rect:die() -- pos and size also die
+
+	-- Scope array example
+	local waypoints = Val.scope {
+		Val.new(Vector3.new(2, 6, -3)),
+		Val.new(Vector3.new(9, -4, 8)),
+		Val.new(Vector3.new(-5, 8, 2)),
+		Val.new(Vector3.new(-7, 2, -1)),
+	}
+	
+	for i, v in ipairs(waypoints) do
+		print(v:get().Magnitude)
+	end
+
+	waypoints:die() -- kills all the Vector3 states inside the scope
+	```
+]=]
 function Val.scope(values: {[any]: any}?): Val<any>
 	local self = Val.new(nil)
 	if values == nil then return self end

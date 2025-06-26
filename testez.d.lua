@@ -5,6 +5,7 @@ export type Expectation = {
 	have: Expectation,
 	was: Expectation,
 	at: Expectation,
+	never: Expectation,
 	a: (typeName: string?) -> Expectation,
 	an: (typeName: string?) -> Expectation,
 	ok: () -> Expectation,
