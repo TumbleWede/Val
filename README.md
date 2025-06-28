@@ -3,8 +3,8 @@
 </div>
 <div align="center">
 	<a href="https://tumblewede.github.io/Val/"><img alt="Static Badge" src="https://img.shields.io/badge/Documentation-brightgreen"></a>
-	<a href="LICENSE"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/TumbleWede/Val?include_prereleases&label=Release"></a>
-	<a href="https://github.com/TumbleWede/Val/releases"><img alt="Static Badge" src="https://img.shields.io/badge/License-MIT-maroon"></a>
+	<a href="https://github.com/TumbleWede/Val/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/TumbleWede/Val?include_prereleases&label=Release"></a>
+	<a href="LICENSE"><img alt="Static Badge" src="https://img.shields.io/badge/License-MIT-maroon"></a>
 </div>
 
 # About
