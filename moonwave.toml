@@ -1,0 +1,16 @@
+title = "Val"
+
+[navbar]
+title = ""
+
+[navbar.logo]
+alt = "Val"
+src = "logo.svg"
+
+[home]
+enabled = true
+includeReadme = true
+
+[docusaurus]
+projectName = "Val"
+tagline = "A simple, lightweight state container library."

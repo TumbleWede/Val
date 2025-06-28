@@ -168,6 +168,7 @@ return function()
 				expect(i).never.to.equal("_listeners")
 				expect(i).never.to.equal("_dependents")
 				expect(i).never.to.equal("_disconnects")
+				expect(i).never.to.equal("_eval")
 				expect(i).never.to.equal("set")
 			end
 
@@ -178,14 +179,76 @@ return function()
 				expect(i).never.to.equal("_listeners")
 				expect(i).never.to.equal("_dependents")
 				expect(i).never.to.equal("_disconnects")
+				expect(i).never.to.equal("_eval")
 				expect(i).never.to.equal("set")
 				expect(i).never.to.equal("bad")
 			end
 
 			expect(#t).to.equal(6)
 			t:die()
-			for i, v in t do
-				print(i, v)
+		end)
+	end)
+
+	describe("cloning states", function()
+		it("should clone basic states", function()
+			local x = Val.new(2)
+			local y = x:copy()
+			local z = x
+			expect(x:eq(y)).to.equal(true)
+			expect(x == z).to.equal(true)
+			expect(x == y).to.equal(false)
+		end)
+
+		it("should clone computeds", function()
+			local a = Val.new(3)
+			local b = Val.new(4)
+			local h = Val.calc(function(get)
+				return math.sqrt(get(a) ^ 2 + get(b) ^ 2)
+			end)
+			expect(h:get()).to.equal(5)
+
+			local h2 = h:copy()
+			expect(h:eq(h2)).to.equal(true)
+			expect(h == h2).to.equal(false)
+			local c = a:copy()
+			expect(#c._dependents).to.equal(0)
+			c = c:die()
+			expect(h:isdead()).to.equal(false)
+			expect(h2:isdead()).to.equal(false)
+			a:die()
+			b:die()
+			expect(h:isdead()).to.equal(true)
+			expect(h2:isdead()).to.equal(true)
+		end)
+
+		it("should clone scopes", function()
+			local x = Val.none()
+			x.a = Val.new(20)
+			local c = Val.calc(function(get)
+				return get(x.a) ^ 2
+			end)
+			expect(c:get()).to.equal(400)
+			x.a:set(10)
+			expect(c:get()).to.equal(100)
+			local y = x:copy()
+			expect(y.a == x.a).to.equal(true)
+			expect(y == x).to.equal(false)
+			y.a:set(20)
+			expect(c:get()).to.equal(400)
+			y.a = y.a:copy()
+			y.a:set(10)
+			expect(c:get()).to.equal(400)
+
+			local v = Val.scope {
+				Val.new(Vector2.new(-1, -1)),
+				Val.new(Vector2.new(-1, 1)),
+				Val.new(Vector2.new(1, -1)),
+				Val.new(Vector2.new(1, 1))
+			}
+
+			local v2 = v:copy()
+			for i, vec in ipairs(v) do
+				expect(vec == v2[i]).to.equal(true)
 			end
 		end)
 	end)

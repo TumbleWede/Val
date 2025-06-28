@@ -1,7 +1,7 @@
 --!strict
 --[=[
 	@class Val
-	A very simple, lightweight state container library.
+	A unique thing about this library is that every object--whether it's a state, a computed, or a scope--is ultimately a Val object!
 ]=]
 local Val = {}
 Val.__index = Val
@@ -10,7 +10,7 @@ Val.__iter = function(self)
 		repeat
 			local value
 			key, value = next(self, key)
-			if key == "_value" or key == "_listeners" or key == "_dependents" or key == "_disconnects" or key == "set" then continue end
+			if key == "_value" or key == "_listeners" or key == "_dependents" or key == "_disconnects" or key == "set" or key == "_eval" then continue end
 			return key, value
 		until key == nil
 
@@ -25,6 +25,7 @@ export type Val<T> = typeof(setmetatable({} :: {
 	_listeners: {(T, T, boolean) -> ()},
 	_dependents: {any}, -- Type checker gets mad when I try to say Val<any>
 	_disconnects: {[any]: () -> ()}?,
+	_eval: (((any) -> any) -> T)?,
 	[any]: any
 }, Val))
 
@@ -40,11 +41,11 @@ end
 local function badSet()
 	error("Attempt to call Val:set() on a computed Val object.")
 end
-local badMT = {__index = bad}
+local badMT = {__index = bad, __newindex = bad}
 
 --[=[
 	Constructs a new state
-	```luau
+	```lua
 	local num = Val.new(20)
 	local str = Val.new("Hello, World!")
 	local bool = Val.new(true)
@@ -59,10 +60,12 @@ function Val.new<T>(value: T): Val<T>
 end
 
 --[=[
+	@within Val
+	@method set
 	Sets the value of the state
-	@param value -- the new value of the state
-	@param forceSet -- forces the method to execute anyway in case the old value is the same as the new value
-	```luau
+	@param value T -- the new value of the state
+	@param forceSet boolean? -- forces the method to execute anyway in case the old value is the same as the new value
+	```lua
 	local num = Val.new(10)
 	num:set(20)
 	local str = Val.new("Foo")
@@ -80,8 +83,10 @@ function Val.set<T>(self: Val<T>, value: T, forceSet: boolean?)
 end
 
 --[=[
-	@return the value of the state
-	```luau
+	@within Val
+	@method get
+	@return T -- the value of the state
+	```lua
 	local num = Val.new(10)
 	print(num:get()) -- 10
 	```
@@ -91,11 +96,14 @@ function Val.get<T>(self: Val<T>): T
 end
 
 --[=[
+	@within Val
+	@method add
 	Increases state by `value`
+	
 	Note: Val does not check if the state's type supports this operation
-	@param value
-	@return the state's own self
-	```luau
+	@param value any
+	@return Val
+	```lua
 	local num = Val.new(5)
 	num:add(2) -- 5+2 -> 7
 	```
@@ -106,11 +114,14 @@ function Val.add<T>(self: Val<T>, value: any): Val<T>
 end
 
 --[=[
+	@within Val
+	@method sub
 	Decreases state by `value`
+
 	Note: Val does not check if the state's type supports this operation
-	@param value
-	@return the state's own self
-	```luau
+	@param value any
+	@return Val
+	```lua
 	local num = Val.new(5)
 	num:sub(2) -- 5-2 -> 3
 	```
@@ -121,11 +132,14 @@ function Val.sub<T>(self: Val<T>, value: any): Val<T>
 end
 
 --[=[
+	@within Val
+	@method mul
 	Multiplies state by `value`
+
 	Note: Val does not check if the state's type supports this operation
-	@param value
-	@return the state's own self
-	```luau
+	@param value any
+	@return Val
+	```lua
 	local num = Val.new(5)
 	num:mul(2) -- 5*2 -> 10
 	```
@@ -136,11 +150,14 @@ function Val.mul<T>(self: Val<T>, value: any): Val<T>
 end
 
 --[=[
+	@within Val
+	@method div
 	Divides state by `value`
+
 	Note: Val does not check if the state's type supports this operation
-	@param value
-	@return the state's own self
-	```luau
+	@param value any
+	@return Val
+	```lua
 	local num = Val.new(5)
 	num:div(2) -- 5/2 -> 2.5
 	```
@@ -151,11 +168,14 @@ function Val.div<T>(self: Val<T>, value: any): Val<T>
 end
 
 --[=[
+	@within Val
+	@method idiv
 	Floor divides state by `value`
+
 	Note: Val does not check if the state's type supports this operation
-	@param value
-	@return the state's own self
-	```luau
+	@param value any
+	@return Val
+	```lua
 	local num = Val.new(5)
 	num:idiv(2) -- 2 remainder 1 -> 2
 	```
@@ -166,11 +186,14 @@ function Val.idiv<T>(self: Val<T>, value: any): Val<T>
 end
 
 --[=[
+	@within Val
+	@method mod
 	Applies the modulus of state by `value`
+
 	Note: Val does not check if the state's type supports this operation
-	@param value
-	@return the state's own self
-	```luau
+	@param value any
+	@return Val
+	```lua
 	local num = Val.new(5)
 	num:mod(2) -- 2 remainder 1 -> 1
 	```
@@ -181,11 +204,14 @@ function Val.mod<T>(self: Val<T>, value: any): Val<T>
 end
 
 --[=[
+	@within Val
+	@method pow
 	Exponentiates state by `value`
+
 	Note: Val does not check if the state's type supports this operation
-	@param value
-	@return the state's own self
-	```luau
+	@param value any
+	@return Val
+	```lua
 	local num = Val.new(5)
 	num:pow(2) -- 5^2 -> 25
 	```
@@ -196,11 +222,14 @@ function Val.pow<T>(self: Val<T>, value: any): Val<T>
 end
 
 --[=[
+	@within Val
+	@method cat
 	Concatenates state by `value`
+
 	Note: Val does not check if the state's type supports this operation
-	@param value
-	@return the state's own self
-	```luau
+	@param value any
+	@return Val
+	```lua
 	local str = Val.new("Hello, ")
 	str:cat("World!") -- "Hello, " .. "World!" -> "Hello, World!"
 	```
@@ -211,12 +240,15 @@ function Val.cat<T>(self: Val<T>, value: any): Val<T>
 end
 
 --[=[
+	@within Val
+	@method flip
 	Toggles the state's value (value = not value)
+
 	Using this method on a non-boolean state will convert it into a boolean state
+
 	Note: Val does not check if the state's type supports this operation
-	@param value
-	@return the state's own self
-	```luau
+	@return Val
+	```lua
 	local bool = Val.new(true)
 	bool:flip() -- false
 	bool:flip():flip():flip() -- true -> false -> true
@@ -228,11 +260,14 @@ function Val.flip<T>(self: Val<T>): Val<T>
 end
 
 --[=[
+	@within Val
+	@method eq
 	Checks if the state's value is equal to the value of `other`
+
 	Equivalent to state:get() == other:get()
-	@param other
+	@param other Val
 	@return boolean
-	```luau
+	```lua
 	local a = Val.new(10)
 	local b = Val.new(10)
 	local c = Val.new(20)
@@ -245,11 +280,14 @@ function Val.eq<T, U>(self: Val<T>, other: Val<U>): boolean
 end
 
 --[=[
+	@within Val
+	@method lt
 	Checks if the state's value is less than the value of `other`
+
 	Equivalent to state:get() < other:get()
-	@param other
+	@param other Val
 	@return boolean
-	```luau
+	```lua
 	local a = Val.new(20)
 	local b = Val.new(30)
 	local c = Val.new(10)
@@ -264,11 +302,14 @@ function Val.lt<T, U>(self: Val<T>, other: Val<U>): boolean
 end
 
 --[=[
+	@within Val
+	@method le
 	Checks if the state's value is less than or equal to the value of `other`
+
 	Equivalent to state:get() < other:get()
-	@param other
+	@param other Val
 	@return boolean
-	```luau
+	```lua
 	local a = Val.new(20)
 	local b = Val.new(30)
 	local c = Val.new(10)
@@ -283,11 +324,14 @@ function Val.le<T, U>(self: Val<T>, other: Val<U>): boolean
 end
 
 --[=[
+	@within Val
+	@method gt
 	Checks if the state's value is greater than the value of `other`
+
 	Equivalent to state:get() > other:get()
-	@param other
+	@param other Val
 	@return boolean
-	```luau
+	```lua
 	local a = Val.new(20)
 	local b = Val.new(30)
 	local c = Val.new(10)
@@ -302,11 +346,14 @@ function Val.gt<T, U>(self: Val<T>, other: Val<U>): boolean
 end
 
 --[=[
+	@within Val
+	@method ge
 	Checks if the state's value is greater than or equal to the value of `other`
+
 	Equivalent to state:get() > other:get()
-	@param other
+	@param other Val
 	@return boolean
-	```luau
+	```lua
 	local a = Val.new(20)
 	local b = Val.new(30)
 	local c = Val.new(10)
@@ -321,11 +368,13 @@ function Val.ge<T, U>(self: Val<T>, other: Val<U>): boolean
 end
 
 --[=[
+	@within Val
+	@method on
 	Subscribes a callback to be called every time the state's value changes
-	@param callback (newValue T, oldValue? T, wasCalledImmediately? boolean) -> ()
+	@param callback (newValue: T, oldValue?: T, wasCalledImmediately?: boolean) -> ()
 	@param callImmediately boolean?
-	@return disconnect () -> () -- calling this function will unsubscribe the callback from the state
-	```luau
+	@return disconnect: () -> () -- calling this function will unsubscribe the callback from the state
+	```lua
 	local num = Val.new(10)
 	local disconnect = num:on(function(newValue)
 		print("num set to:", newValue)
@@ -358,9 +407,11 @@ function Val.on<T>(self: Val<T>, callback: (T, T, boolean) -> (), callImmediatel
 end
 
 --[=[
+	@within Val
+	@method die
 	Destroys the state
-	@param shallow -- if true, any states stored inside the current state will be dereferenced rather than destroyed along with the current state
-	```luau
+	@param shallow boolean? -- if true, any states stored inside the current state will be dereferenced rather than destroyed along with the current state
+	```lua
 	local num = Val.new(10)
 	num:set(20)
 	num:die()
@@ -433,10 +484,13 @@ function Val.die<T>(self: Val<T>, shallow: boolean?): nil
 end
 
 --[=[
+	@within Val
+	@method isdead
 	Note: `Val.isdead(state)` behaves differently from `state:isdead()` to provide the same output, only if the state is dead
+
 	`Val.isdead(state)` checks the metatable of the state while state:isdead() calls a metamethod to return true
-	@return whether or not the state is dead
-	```luau
+	@return boolean -- whether or not the state is dead
+	```lua
 	local x = Val.new(true)
 	print(x:isdead()) -- false
 	print(Val.isdead(x)) -- false
@@ -452,11 +506,13 @@ end
 
 --[=[
 	Creates a computed state that automatically updates with its referenced states
-	@param eval (get) -> T -- a callback function that should return a new value derived from its dependent states
-	@param get (Val<T>) -> T -- inside the eval function, call get(state) instead of state:get() so dependent states are detected
-	@return an immutable state (Val:set() is disabled to enforce reactivity)
+	@param eval (get: (Val<any>) -> any) -> T -- a callback function that should return a new value derived from its dependent states
+
+	get (Val<T>) -> T -- inside the eval function, call get(state) instead of state:get() so dependent states are detected
+	
 	Note: If a dependent state is destroyed, then so will the computed
-	```luau
+	@return Val -- an immutable state (Val:set() is disabled to enforce reactivity)
+	```lua
 	local length = Val.new(10)
 	local area = Val.calc(function(get)
 		local side = get(length)
@@ -483,13 +539,14 @@ function Val.calc<T>(eval: ((Val<any>) -> any) -> T): Val<T>
 		_listeners = {},
 		_dependents = {},
 		_disconnects = {},
+		_eval = eval,
 		set = badSet -- Enforce read-only behavior
 	}, Val)
 
 	for _, state in ipairs(dependencies) do
 		table.insert(state._dependents, self)
-		self._disconnects[state] = state:on(function(value)
-			Val.set(self, eval(get))
+		self._disconnects[state] = state:on(function()
+			Val.set(self, self._eval(Val.get))
 		end)
 	end
 
@@ -499,8 +556,9 @@ end
 --[=[
 	Batches a sequence of set calls so that observers are only called after all states are fully set
 	@param fn (set) -> T -- a callback function where all the set calls should take place
-	@param get (Val<T>) -> T -- inside fn, call set(state) instead of state:set() so that the state change is batched instead of instant
-	```luau
+	
+	set (Val<T>) -> T -- inside fn, call set(state) instead of state:set() so that the state change is batched instead of instant
+	```lua
 	local w = Val.new(6)
 	local h = Val.new(5)
 	local area = Val.calc(function(get)
@@ -541,10 +599,13 @@ end
 
 --[=[
 	Creates a state with no value, where `values` are stored as fields directly inside the state itself rather than in its value.
+
 	When the scope state dies, all of its contents die with it unless a true is passed into the first optional parameter (state:die(true))
+
 	Any value inside the scope table that isn't a Val object will be dereferenced rather than destroyed when the scope dies
+
 	If iterating through a scope, always use either generic iteration (for i, v in state do) or ipairs to avoid iterating through built-in keys.
-	```luau
+	```lua
 	-- Scope dictionary example
 	local rect = Val.scope {
 		pos = Val.new(Vector2.new(6, 3)),
@@ -587,9 +648,10 @@ end
 
 --[=[
 	Creates a state with no value, essentially creating a scope manually.
+
 	Equivalent to Val.new(nil)
 	@return a state with no value
-	```luau
+	```lua
 	local rect = Val.none()
 	rect.size = Val.new(Vector2.new(2, 5))
 	rect.pos = Val.new(Vector2.new(9, -5))
@@ -601,20 +663,55 @@ function Val.none(): Val<nil>
 end
 
 --[=[
-	Creates a copy of the state without any subscribed callbacks
-	```luau
+	@within Val
+	@method copy
+	Creates a copy of the state
+
+	The cloned state will not be connected to any callbacks. This also means that a cloned states will not be connected to any computeds.
+
+	This method only creates a shallow copy, so states embedded inside the clone will be the same states as the original in memory.
+
+	Computeds will use the same states as the original
+	@return Val
+	```lua
 	local a = Val.new(0)
 	a:on(function(value)
 		print("set to", value)
 	end)
 	local b = a:copy()
+	print(a == b) -- false
+	print(a:eq(b)) -- true
 	a:set(1) -- set to 1
 	b:set(2) -- no output
 	print(a:get(), b:get()) -- 1, 2
 	```
 ]=]
 function Val.copy<T>(self: Val<T>): Val<T>
-	return Val.new(self._value)
+	local clone = setmetatable({
+		_value = self._value,
+		_listeners = {},
+		_dependents = {},
+		_eval = self._eval,
+		set = self.set
+	}, Val)
+
+	-- Restore computed behavior if applicable
+	if self._disconnects and clone._eval then
+		clone._disconnects = {}
+		for state in pairs(self._disconnects) do
+			table.insert(state._dependents, clone)
+			clone._disconnects[state] = state:on(function()
+				Val.set(clone, clone._eval(Val.get))
+			end)
+		end
+	end
+
+	-- Restore keys from self
+	for key, value in self do
+		clone[key] = value
+	end
+
+	return clone
 end
 
 return Val
