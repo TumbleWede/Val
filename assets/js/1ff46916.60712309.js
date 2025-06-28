@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[874],{4410:e=>{e.exports=JSON.parse('{"sourceUrl":"https://github.com/TumbleWede/Val/blob/main","baseUrl":"/Val/","classOrder":[],"apiCategories":[]}')}}]);
