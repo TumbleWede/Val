@@ -2,7 +2,7 @@
 name = "tumblewede/val"
 description = "A simple, lightweight state container library."
 license = "MIT"
-version = "0.1.0"
+version = "0.1.1"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 exclude = ["**"]

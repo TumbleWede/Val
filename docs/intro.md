@@ -1,49 +1,23 @@
 ---
-sidebar_position: 1
+sidebar_position: 0
 ---
-# Intro
-In this page, I will introduce the basics of Val, but the principles can be applied to most state libraries.
-
-Let's begin by creating some simple logic:
-```lua
-local num = 20
-num = 40
-print(num) -- 40
+# Installation
+# Wally
+Add the following dependency into your dependencies list in `wally.toml`:
+```toml
+[dependencies]
+Val = "tumblewede/val@0.1.1"
 ```
-In the example above, all we did was create a number, modify it, and print its value.
-
-Now let's do the same thing using Val:
-```lua
-local num = Val.new(20)
-num:set(40)
-print(num:get()) -- 40
-```
-This time, `num` is a state object and not a primitive. To set the value, we simply use the `set` method. To get the value, we just use `get`.
-
-Now, let's try a more legitimate example:
-```lua
-local label = script.Parent.TextLabel -- assume this exists
-local num = 20
-label.Text = "Number: " .. num -- Number: 20
-num = 40
-label.Text = "Number: " .. num -- Number: 40
-num = 70
-label.Text = "Number: " .. num -- Number: 70
-```
-One issue with this logic is that we have to manually update `label.Text` every time we change `num` because it is a primitive that cannot be observed.
-
-Now let's try the same thing with Val:
-```lua
-local label = script.Parent.TextLabel -- assume this exists
-local num = Val.new(20)
-num:on(function(value)
-	label.Text = "Number: " .. num
-end, true) -- Number: 20
-num:set(40) -- Number: 40
-num:set(70) -- Number: 70
-```
-Now, all we have to do is change the value of `num`, and `label.Text` will automatically update through the `on` method.
-
-Although code this small may not demand the use of a state container library like Val, synchronizing values with displays in large codebases can quickly become messy. Luckily, state container libraries like Val make this synchronization much more manageable.
-
-In the next pages, I will talk more about how to use the features of Val.
+Then, type `wally install` into your terminal to install the dependency.
+# Roblox Studio
+1. Go to the [Releases page](https://github.com/TumbleWede/Val/releases) of the GitHub repository
+2. Open up the Assets dropdown of the version you'd like to use (ideally the latest version)
+3. Download the `Val.rbxm` file
+4. Drag & drop the `Val.rbxm` into your Roblox Studio game
+5. Relocate the module if needed (ideally in a libraries/modules folder in ReplicatedStorage)
+# Source Code
+1. Go to the [Releases page](https://github.com/TumbleWede/Val/releases) of the GitHub repository
+2. Open up the Assets dropdown of the version you'd like to use (ideally the latest version)
+3. Download the `Val.luau` file
+4. - If you are using Rojo, then drag & drop the `Val.luau` into somewhere in your project.
+   - If you are using Roblox Studio, then copy and paste the contents of `Val.luau` into a new `ModuleScript` named `Val`.

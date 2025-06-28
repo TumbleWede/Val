@@ -1,7 +1,8 @@
 --!strict
+--!optimize 2
+-- Val by TumbleWede (https://tumblewede.github.io/Val/)
 --[=[
 	@class Val
-	A unique thing about this library is that every object--whether it's a state, a computed, or a scope--is ultimately a Val object!
 ]=]
 local Val = {}
 Val.__index = Val
