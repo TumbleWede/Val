@@ -635,7 +635,7 @@ end
 	waypoints:die() -- kills all the Vector3 states inside the scope
 	```
 ]=]
-function Val.scope(values: {[any]: any}?): Val<any>
+function Val.scope(values: {[any]: any}?): Val<nil>
 	local self = Val.new(nil)
 	if values == nil then return self end
 
@@ -650,7 +650,7 @@ end
 	Creates a state with no value, essentially creating a scope manually.
 
 	Equivalent to Val.new(nil)
-	@return a state with no value
+	@return Val<nil> -- a state with no value
 	```lua
 	local rect = Val.none()
 	rect.size = Val.new(Vector2.new(2, 5))

@@ -1,0 +1,55 @@
+:root {
+	--ifm-color-primary: #0fa;
+	--ifm-color-primary-dark: #0c8;
+	--ifm-color-primary-darker: #00aa71;
+	--ifm-color-primary-darkest: #00875a;
+	--ifm-color-primary-light: #3fb;
+	--ifm-color-primary-lighter: #6fc;
+}
+
+[data-theme='light'] {
+	--ifm-color-primary: #0c8;
+	--ifm-color-primary-dark: #00aa71;
+	--ifm-color-primary-darker: #00875a;
+	--ifm-color-primary-darkest: #00875a;
+}
+
+.buttons {
+	display: flex;
+	justify-content: center;
+}
+
+.heroBanner {
+	padding: 4rem 0;
+	overflow: hidden;
+	text-align: center;
+}
+
+.button {
+	margin-right: 20px;
+	margin-bottom: 0px;
+}
+
+.features {
+	display: flex;
+	align-items: center;
+	padding: 2rem 0;
+	width: 100%;
+}
+
+@media screen and (max-width: 996px) {
+	.heroBanner {
+		padding: 2rem;
+	}
+}
+
+@media screen and (max-width: 430px) {
+	.buttons {
+		flex-direction: column;
+	}
+
+	.button {
+		margin-right: 0px;
+		margin-bottom: 20px;
+	}
+}

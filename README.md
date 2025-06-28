@@ -1,7 +1,5 @@
-<p align="center">
-  <img src="logo.png" alt="logo" width="300"/>
-</p>
+<div align="center">
+	<img src=".moonwave/static/logo.png" alt="logo" width="300"/>
 
-# Welcome to My API Docs
-
-Some intro text here...
+![Static Badge](https://img.shields.io/badge/License-MIT-maroon)
+</div>
