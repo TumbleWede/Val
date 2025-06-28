@@ -23,7 +23,9 @@ In this example, we created a computed that calculates the hypotenuse, `h`, of a
 We used the `Val.calc` constructor to create the computed, which we passed in a callback function as the argument. This function will return the value of the computed based on the values of the other states we want to use (`a` and `b` in this case). When `a` or `b` updates its value, the callback will be called, thus allowing it to update its value.
 
 Notice how the callback takes in a function called `get` that we use instead of the `Val:get()` method. This special `get` function tells the computed which values it depends on, so if we just used `a:get()` instead of `get(a)`, then `h` would not update if the value of `a` were to change.
-
+:::note
+You can call `get(Val<T>)` on the same state multiple times safely; the resulting computed will refer to the value only once, even if you multi-call `get(Val<T>)`.
+:::
 Let's look at another triangle example below:
 ```lua
 local a, b, c = Val.new(3), Val.new(4), Val.new(5)
@@ -50,3 +52,21 @@ Computed states are still considered states, which means that we can also use th
 Although chaining computeds like this is possible, there is one drawback, where the final computed may fire multiple times rather than once. In this case, if we set the value of a side length, `s` will update, but since `area` depends on both the side lengths AND `s`, this means that `area` will update twice instead of once. For small calculations like in this example, it's not really a problem, but if you were to have expensive computeds, it would be better to avoid this practice.
 :::
 # Observer Behavior with Computeds
+Observers for computeds behave the exact same as observers for states:
+```lua
+local s = Val.new(10)
+local area = Val.calc(function(get)
+	return get(s) ^ 2
+end)
+
+s:on(function(new)
+	print("Side length set to", new)
+end)
+area:on(function(new)
+	print("Area updated to", new)
+end)
+
+s:set(20)
+-- Side length set to 20
+-- Area updated to 400
+```
