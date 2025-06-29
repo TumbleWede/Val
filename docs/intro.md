@@ -1,6 +1,7 @@
 ---
 sidebar_position: 0
 ---
+
 # Installation
 # Wally
 Add the following dependency into your dependencies list in `wally.toml`:
@@ -8,7 +9,25 @@ Add the following dependency into your dependencies list in `wally.toml`:
 [dependencies]
 Val = "tumblewede/val@0.1.1"
 ```
-Then, type `wally install` into your terminal to install the dependency.
+Then, run `wally install` in your project's terminal to install the dependency.
+
+:::info[Restoring Type Safety]
+Unfortunately, you cannot access types from Wally packages due to the structure of Packages. To fix this, we can install [wally-package-types](https://github.com/JohnnyMorganz/wally-package-types) as a workaround.
+
+To install [wally-package-types](https://github.com/JohnnyMorganz/wally-package-types), run the following command in your terminal:
+```sh
+cargo install wally-package-types
+```
+If your project does not have a sourcemap, then run the following command in your project's terminal:
+```sh
+rojo sourcemap default.project.json --output sourcemap.json
+```
+Finally, run the command:
+```sh
+wally-package-types --sourcemap sourcemap.json Packages/
+```
+
+:::
 # Roblox Studio
 1. Go to the [Releases page](https://github.com/TumbleWede/Val/releases) of the GitHub repository
 2. Open up the Assets dropdown of the version you'd like to use (ideally the latest version)

@@ -7,6 +7,7 @@ Val has many operator methods that help reduce the code needed to perform operat
 Using these operator methods also reduces the number of calls per operation, thus being more efficient than performing them manually (as seen in the Val equivalents).
 
 These methods will not check if the operation is valid, so trying to do something devious like dividing a string will result in an error.
+
 # Assignment Operators
 Assume `a` is a `Val<T>` and `b` is a `T`, where `T` is any type. If `b` were to be a `Val<T>`, then you would need to call `b:get()` inside each assignment call (e.g. `a:add(b:get())`).
 | Name           | Operator    | Val Method  | Val Equivalent        |
@@ -20,6 +21,14 @@ Assume `a` is a `Val<T>` and `b` is a `T`, where `T` is any type. If `b` were to
 | Exponentiation | `a ^= b`    | `a:pow(b)`  | `a:set(a:get() ^ b)`  |
 | Concatenation  | `a ..= b`   | `a:cat(b)`  | `a:set(a:get() .. b)` |
 | Toggling       | `a = not a` | `a:flip()`  | `a:set(not a:get())`  |
+
+Additionally, you can also chain these methods together:
+```lua
+local x = Val.new(2)
+x:pow(3):div(4):add(5):mul(6) -- (((x ^ 3) / 4) + 5) * 6
+print(x:get()) -- 42
+```
+
 # Relational Operators
 Assume both `a` and `b` are a `Val<T>`, since these methods are meant to be used exclusively for comparing `Val` objects.
 | Name                     | Operator | Val Method | Val Equivalent       |
