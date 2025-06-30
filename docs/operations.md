@@ -29,6 +29,20 @@ x:pow(3):div(4):add(5):mul(6) -- (((x ^ 3) / 4) + 5) * 6
 print(x:get()) -- 42
 ```
 
+# Math Operations
+These methods behave the same as assignment operators.
+| Name           | Operation                     | Val Method          | Val Equivalent                         |
+| -------------- | ----------------------------- | ------------------- | -------------------------------------- |
+| Min Value      | `a = math.min(a, b, ...)`     | `a:min(b, ...)`     | `a:set(math.min(a:get(), b, ...))`     |
+| Max Value      | `a = math.max(a, b, ...)`     | `a:max(b, ...)`     | `a:set(math.max(a:get(), b, ...))`     |
+| Clamp          | `a = math.clamp(a, min, max)` | `a:clamp(min, max)` | `a:set(math.clamp(a:get(), min, max))` |
+| Absolute Value | `a = math.abs(a)`             | `a:abs()`           | `a:set(math.abs(a:get()))`             |
+| Floor          | `a = math.floor(a)`           | `a:floor()`         | `a:set(math.floor(a:get()))`           |
+| Ceiling        | `a = math.ceil(a)`            | `a:ceil()`          | `a:set(math.ceil(a:get()))`            |
+| Round          | `a = math.round(a)`           | `a:round()`         | `a:set(math.round(a:get()))`           |
+| Snap           | `a = math.round(a / b) * b`   | `a:snap(b)`         | `a:set(math.round(a:get() / b) * b)`   |
+| Lerp           | `a = math.lerp(a, b, t)`      | `a:lerp(b, t)`      | `a:set(math.lerp(a:get(), b, t))`      |
+
 # Relational Operators
 Assume both `a` and `b` are a `Val<T>`, since these methods are meant to be used exclusively for comparing `Val` objects.
 | Name                     | Operator | Val Method | Val Equivalent       |

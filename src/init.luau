@@ -21,6 +21,16 @@ Val.__iter = function(self)
 	return iterator, self
 end
 
+--[=[
+	@type Val<T> @metatable {_value: T, _listeners: {(T, T, boolean) -> ()}, _dependents: {Val<any>}, _disconnects: {[Val<any>]: () -> ()}?, _eval<U>: (((Val<U>) -> U) -> T)?, [any]: any}
+	@within Val
+	Here are the internals of a Val object! You really don't have to understand any of this to know how to use Val,
+	but it's here in case you need to do some hacky operations.
+	```lua
+	local Val = require(path.to.Val)
+	local num: Val.Val<number> = Val.new(3.141)
+	```
+]=]
 export type Val<T> = typeof(setmetatable({} :: {
 	_value: T,
 	_listeners: {(T, T, boolean) -> ()},
@@ -29,6 +39,17 @@ export type Val<T> = typeof(setmetatable({} :: {
 	_eval: (((any) -> any) -> T)?,
 	[any]: any
 }, Val))
+
+--[=[
+	@type T<T> Val<T>
+	@within Val
+	An alias for `Val<T>` so you can write `Val.T<T>` instead of `Val.Val<T>` in external scripts
+	```lua
+	local Val = require(path.to.Val)
+	local num: Val.T<number> = Val.new(2.718)
+	```
+]=]
+export type T<T> = Val<T>
 
 -- Memory safety stuff
 local function trueClosure() return true end
@@ -66,6 +87,7 @@ end
 	Sets the value of the state
 	@param value T -- the new value of the state
 	@param forceSet boolean? -- forces the method to execute anyway in case the old value is the same as the new value
+	@return Val
 	```lua
 	local num = Val.new(10)
 	num:set(20)
@@ -73,14 +95,17 @@ end
 	str:set("Bar")
 	```
 ]=]
-function Val.set<T>(self: Val<T>, value: T, forceSet: boolean?)
-	if value == self._value and not forceSet then return end
-	local old = self._value
-	self._value = value
+function Val.set<T>(self: Val<T>, value: T, forceSet: boolean?): Val<T>
+	if value ~= self._value or forceSet then
+		local old = self._value
+		self._value = value
 
-	for _, callback in ipairs(self._listeners) do
-		callback(value, old, false)
+		for _, callback in ipairs(self._listeners) do
+			callback(value, old, false)
+		end
 	end
+
+	return self
 end
 
 --[=[
@@ -101,7 +126,6 @@ end
 	@method add
 	Increases state by `value`
 	
-	Note: Val does not check if the state's type supports this operation
 	@param value any
 	@return Val
 	```lua
@@ -119,7 +143,6 @@ end
 	@method sub
 	Decreases state by `value`
 
-	Note: Val does not check if the state's type supports this operation
 	@param value any
 	@return Val
 	```lua
@@ -137,7 +160,6 @@ end
 	@method mul
 	Multiplies state by `value`
 
-	Note: Val does not check if the state's type supports this operation
 	@param value any
 	@return Val
 	```lua
@@ -155,7 +177,6 @@ end
 	@method div
 	Divides state by `value`
 
-	Note: Val does not check if the state's type supports this operation
 	@param value any
 	@return Val
 	```lua
@@ -173,7 +194,6 @@ end
 	@method idiv
 	Floor divides state by `value`
 
-	Note: Val does not check if the state's type supports this operation
 	@param value any
 	@return Val
 	```lua
@@ -191,7 +211,6 @@ end
 	@method mod
 	Applies the modulus of state by `value`
 
-	Note: Val does not check if the state's type supports this operation
 	@param value any
 	@return Val
 	```lua
@@ -209,7 +228,6 @@ end
 	@method pow
 	Exponentiates state by `value`
 
-	Note: Val does not check if the state's type supports this operation
 	@param value any
 	@return Val
 	```lua
@@ -227,7 +245,6 @@ end
 	@method cat
 	Concatenates state by `value`
 
-	Note: Val does not check if the state's type supports this operation
 	@param value any
 	@return Val
 	```lua
@@ -247,7 +264,6 @@ end
 
 	Using this method on a non-boolean state will convert it into a boolean state
 
-	Note: Val does not check if the state's type supports this operation
 	@return Val
 	```lua
 	local bool = Val.new(true)
@@ -257,6 +273,182 @@ end
 ]=]
 function Val.flip<T>(self: Val<T>): Val<T>
 	self._value = (not self._value) :: any
+	return self
+end
+
+--[=[
+	@within Val
+	@method min
+	Updates state to the smallest value
+
+	@param x number
+	@param ... number
+	@return Val
+	```lua
+	local num = Val.new(5)
+	num:min(3) -- 3 < 5 -> 3
+	num:min(2, 4, 6) -- 2 < 4 < 5 < 6 -> 2
+	```
+]=]
+function Val.min<T>(self: Val<T>, x: number, ...: number): Val<T>
+	self._value = math.min(self._value :: any, x, ...) :: any
+	return self
+end
+
+--[=[
+	@within Val
+	@method max
+	Updates state to the largest value
+
+	@param min number
+	@param max number
+	@return Val
+	```lua
+	local num = Val.new(5)
+	num:max(3) -- 3 < 5 -> 5
+	num:max(2, 4, 6) -- 2 < 4 < 5 < 6 -> 6
+	```
+]=]
+function Val.max<T>(self: Val<T>, x: number, ...: number): Val<T>
+	self._value = math.max(self._value :: any, x, ...) :: any
+	return self
+end
+
+--[=[
+	@within Val
+	@method clamp
+	Clamps state between `min` and `max`
+
+	@param x number
+	@param ... number
+	@return Val
+	```lua
+	local num = Val.new(3)
+	num:clamp(4, 6) -- 3 < [4, 6] -> 4
+	num:clamp(-2, 2) -- 4 < [-2, 2] -> 2
+	```
+]=]
+function Val.clamp<T>(self: Val<T>, min: number, max: number): Val<T>
+	self._value = math.clamp(self._value :: any, min, max) :: any
+	return self
+end
+
+--[=[
+	@within Val
+	@method abs
+	Sets state to its absolute value
+
+	@return Val
+	```lua
+	local num = Val.new(3)
+	num:abs() -- 3
+	num:set(-4)
+	num:abs() -- 4
+	```
+]=]
+function Val.abs<T>(self: Val<T>): Val<T>
+	self._value = math.abs(self._value :: any) :: any
+	return self
+end
+
+--[=[
+	@within Val
+	@method floor
+	Rounds down state to the nearest integer
+
+	@return Val
+	```lua
+	local num = Val.new(3)
+	num:floor() -- 3
+	num:set(3.3)
+	num:floor() -- 3
+	num:set(3.7)
+	num:floor() -- 3
+	```
+]=]
+function Val.floor<T>(self: Val<T>): Val<T>
+	self._value = math.floor(self._value :: any) :: any
+	return self
+end
+
+--[=[
+	@within Val
+	@method ceil
+	Rounds up state to the nearest integer
+
+	@return Val
+	```lua
+	local num = Val.new(3)
+	num:ceil() -- 3
+	num:set(3.3)
+	num:ceil() -- 4
+	num:set(3.7)
+	num:ceil() -- 4
+	```
+]=]
+function Val.ceil<T>(self: Val<T>): Val<T>
+	self._value = math.ceil(self._value :: any) :: any
+	return self
+end
+
+--[=[
+	@within Val
+	@method round
+	Rounds state to the nearest integer
+
+	@return Val
+	```lua
+	local num = Val.new(3)
+	num:round() -- 3
+	num:set(3.3)
+	num:round() -- 3
+	num:set(3.7)
+	num:round() -- 4
+	```
+]=]
+function Val.round<T>(self: Val<T>): Val<T>
+	self._value = math.round(self._value :: any) :: any
+	return self
+end
+
+--[=[
+	@within Val
+	@method snap
+	Rounds state to the nearest `unit`
+
+	@param unit number
+	@return Val
+	```lua
+	local num = Val.new(3.3)
+	num:snap(0.5) -- 3.5
+	num:set(5.137)
+	num:snap(0.01) -- 5.14
+	num:set(1.25)
+	num:set(2) -- 2
+	```
+]=]
+function Val.snap<T>(self: Val<T>, unit: number): Val<T>
+	self._value = math.round(self._value :: any / unit) * unit :: any
+	return self
+end
+
+--[=[
+	@within Val
+	@method lerp
+	Interpolates state to `b` based on the factor `t`
+
+	@param b number -- The ending value
+	@param t number -- The interpolation factor, typically between 0 and 1
+	@return Val
+	```lua
+	local num = Val.new(3)
+	num:lerp(4, 0.5) -- 50% from 3 to 4 -> 3.5
+	num:lerp(5, 1) -- 100% from 3.5 to 5 -> 5
+	num:lerp(10, 0.4) -- 40% from 5 to 10 -> 7
+	```
+]=]
+function Val.lerp<T>(self: Val<T>, b: number, t: number): Val<T>
+	self._value = math.lerp(self._value :: any, b, t) :: any
 	return self
 end
 
@@ -483,6 +675,14 @@ function Val.die<T>(self: Val<T>, shallow: boolean?): nil
 	setmetatable(self :: any, badMT)
 	return nil
 end
+
+
+--[=[
+	@within Val
+	@method Destroy
+	An alias for `Val:die()` for better compatibility with cleanup libraries like [Janitor](https://howmanysmall.github.io/Janitor/)
+]=]
+Val.Destroy = Val.die
 
 --[=[
 	@within Val

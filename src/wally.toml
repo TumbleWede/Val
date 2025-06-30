@@ -2,10 +2,8 @@
 name = "tumblewede/val"
 description = "A simple, lightweight state container library."
 license = "MIT"
-version = "0.1.1"
+version = "0.2.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 exclude = ["**"]
 include = ["init.luau", "LICENSE", "wally.toml"]
-
-[dependencies]

@@ -27,6 +27,9 @@ side:die()
 print(side:isdead()) -- true
 print(area:isdead()) -- true
 ```
+:::tip
+`Val:Destroy()` is an alias for `Val:die()` for better compatibility with cleanup libraries like [Janitor](https://howmanysmall.github.io/Janitor/)
+:::
 # Destroying Scopes
 By default, all states inside the dying state will be destroyed along with the state. Alternatively, you can call `Val:die(true)`, where the `true` argument indicates that all internal states will be dereferenced rather than destroyed:
 ```lua

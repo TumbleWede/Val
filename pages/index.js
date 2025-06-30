@@ -52,10 +52,10 @@ const FeatureList = [
 		),
 	},
 	{
-		title: "Minimal Syntax",
+		title: "Simple API",
 		description: (
 			<>
-				To minimize verbosity, all method and constructor names are short and sweet.
+				Val is a beginner-friendly approach to state management designed to be as simple as possible while remaining a powerful library.
 			</>
 		),
 	},
