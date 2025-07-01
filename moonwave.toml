@@ -15,4 +15,4 @@ includeReadme = true
 [docusaurus]
 projectName = "Val"
 favicon = "favicon.png"
-tagline = "A simple, lightweight state container library for Roblox/Luau."
+tagline = "A simple, lightweight state management library for Roblox/Luau."

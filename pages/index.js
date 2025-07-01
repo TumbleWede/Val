@@ -1,12 +1,12 @@
-import Link from "@docusaurus/Link"
-import useDocusaurusContext from "@docusaurus/useDocusaurusContext"
-import Layout from "@theme/Layout"
-import clsx from "clsx"
-import React from "react"
-import styles from "./index.module.css"
+import Link from "@docusaurus/Link";
+import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
+import Layout from "@theme/Layout";
+import clsx from "clsx";
+import React from "react";
+import styles from "./index.module.css";
 
 function Header() {
-	const { siteConfig } = useDocusaurusContext()
+	const { siteConfig } = useDocusaurusContext();
 	return (
 		<header className={clsx("hero ", styles.heroBanner)}>
 			<div className="container">
@@ -31,7 +31,7 @@ function Header() {
 				</div>
 			</div>
 		</header>
-	)
+	);
 }
 
 const FeatureList = [
@@ -59,7 +59,7 @@ const FeatureList = [
 			</>
 		),
 	},
-]
+];
 
 function Feature({ title, description }) {
 	return (
@@ -69,26 +69,26 @@ function Feature({ title, description }) {
 				<p>{description}</p>
 			</div>
 		</div>
-	)
+	);
 }
 
 export default function Home() {
-	const { siteConfig } = useDocusaurusContext()
+	const { siteConfig } = useDocusaurusContext();
 	return (
 		<Layout
 			title={`${siteConfig.title}`}
-			description="A simple, lightweight state container library."
+			description="A simple, lightweight state management library."
 		>
 			<Header />
 			<section className={styles.features}>
 				<div className="container">
 					<div className="row">
-					{FeatureList.map((props, idx) => (
-						<Feature key={idx} {...props} />
-					))}
+						{FeatureList.map((props, idx) => (
+							<Feature key={idx} {...props} />
+						))}
 					</div>
 				</div>
 			</section>
 		</Layout>
-	)
+	);
 }

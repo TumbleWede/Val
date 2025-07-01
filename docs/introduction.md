@@ -42,6 +42,6 @@ num:set(70) -- Number: 70
 ```
 Now, all we have to do is change the value of `num`, and `label.Text` will automatically update through the `on` method.
 
-Although code this small may not demand the use of a state container library like Val, synchronizing values with displays in large codebases can quickly become messy. Luckily, state container libraries like Val make this synchronization much more manageable.
+Although code this small may not demand the use of a state management library like Val, synchronizing values with displays in large codebases can quickly become messy. Luckily, state management libraries like Val make this synchronization much more manageable.
 
 In the next pages, I will talk more about how to use the features of Val.

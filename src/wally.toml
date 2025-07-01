@@ -1,6 +1,6 @@
 [package]
 name = "tumblewede/val"
-description = "A simple, lightweight state container library."
+description = "A simple, lightweight state management library."
 license = "MIT"
 version = "0.2.0"
 registry = "https://github.com/UpliftGames/wally-index"

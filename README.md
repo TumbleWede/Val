@@ -8,7 +8,7 @@
 </div>
 
 # About
-Val is a simple, lightweight state container library for Roblox & Luau. Inspired by reactive programming, Val allows you to observe values so that you can automate processes for value changes.
+Val is a simple, lightweight state management library for Roblox & Luau. Inspired by reactive programming, Val allows you to observe values so that you can automate processes for value changes.
 
 ## Why Val?
 - Zero dependencies (source code is just a single file!)
