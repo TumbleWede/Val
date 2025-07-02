@@ -30,3 +30,12 @@ The second optional parameter, if set to `true`, indicates that we want to call 
 The `Val:on` method returns a disconnect callback. When we no longer need to listen to a value, we can call this disconnect. In the example above, our observer would display any changes of the value of `x`, but this observer is destroyed after we called `disconnect()`
 
 In the example above, we used `Val:set` with a second optional boolean parameter that, when `true`, would cause the method to call its observers even if the value did not actually change.
+
+:::tip
+For type safety, you may need to indicate the types of `newValue` and `oldValue` due to Luau's type solver being unable to recognize the state's type:
+```lua
+local disconnect = x:on(function(newValue: number, oldValue: number, wasCalledImmediately)
+	print(newValue, oldValue, wasCalledImmediately)
+end, true) -- 2 2 true
+```
+:::

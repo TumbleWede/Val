@@ -127,14 +127,15 @@ end
 	Increases state by `value`
 	
 	@param value any
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(5)
 	num:add(2) -- 5+2 -> 7
 	```
 ]=]
-function Val.add<T>(self: Val<T>, value: any): Val<T>
-	self._value += value
+function Val.add<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
+	self:set(self._value + value, forceSet)
 	return self
 end
 
@@ -144,14 +145,15 @@ end
 	Decreases state by `value`
 
 	@param value any
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(5)
 	num:sub(2) -- 5-2 -> 3
 	```
 ]=]
-function Val.sub<T>(self: Val<T>, value: any): Val<T>
-	self._value -= value
+function Val.sub<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
+	self:set(self._value - value, forceSet)
 	return self
 end
 
@@ -161,14 +163,15 @@ end
 	Multiplies state by `value`
 
 	@param value any
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(5)
 	num:mul(2) -- 5*2 -> 10
 	```
 ]=]
-function Val.mul<T>(self: Val<T>, value: any): Val<T>
-	self._value *= value
+function Val.mul<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
+	self:set(self._value * value, forceSet)
 	return self
 end
 
@@ -178,14 +181,15 @@ end
 	Divides state by `value`
 
 	@param value any
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(5)
 	num:div(2) -- 5/2 -> 2.5
 	```
 ]=]
-function Val.div<T>(self: Val<T>, value: any): Val<T>
-	self._value /= value
+function Val.div<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
+	self:set(self._value / value, forceSet)
 	return self
 end
 
@@ -195,14 +199,15 @@ end
 	Floor divides state by `value`
 
 	@param value any
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(5)
 	num:idiv(2) -- 2 remainder 1 -> 2
 	```
 ]=]
-function Val.idiv<T>(self: Val<T>, value: any): Val<T>
-	self._value //= value
+function Val.idiv<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
+	self:set(self._value // value, forceSet)
 	return self
 end
 
@@ -212,14 +217,15 @@ end
 	Applies the modulus of state by `value`
 
 	@param value any
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(5)
 	num:mod(2) -- 2 remainder 1 -> 1
 	```
 ]=]
-function Val.mod<T>(self: Val<T>, value: any): Val<T>
-	self._value %= value
+function Val.mod<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
+	self:set(self._value % value, forceSet)
 	return self
 end
 
@@ -229,14 +235,15 @@ end
 	Exponentiates state by `value`
 
 	@param value any
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(5)
 	num:pow(2) -- 5^2 -> 25
 	```
 ]=]
-function Val.pow<T>(self: Val<T>, value: any): Val<T>
-	self._value ^= value
+function Val.pow<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
+	self:set(self._value ^ value, forceSet)
 	return self
 end
 
@@ -246,14 +253,15 @@ end
 	Concatenates state by `value`
 
 	@param value any
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local str = Val.new("Hello, ")
 	str:cat("World!") -- "Hello, " .. "World!" -> "Hello, World!"
 	```
 ]=]
-function Val.cat<T>(self: Val<T>, value: any): Val<T>
-	self._value ..= value
+function Val.cat<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
+	self:set(self._value .. value, forceSet)
 	return self
 end
 
@@ -272,7 +280,7 @@ end
 	```
 ]=]
 function Val.flip<T>(self: Val<T>): Val<T>
-	self._value = (not self._value) :: any
+	self:set(not self._value)
 	return self
 end
 
@@ -281,8 +289,11 @@ end
 	@method min
 	Updates state to the smallest value
 
+	Does not support force set
+
 	@param x number
 	@param ... number
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(5)
@@ -291,7 +302,7 @@ end
 	```
 ]=]
 function Val.min<T>(self: Val<T>, x: number, ...: number): Val<T>
-	self._value = math.min(self._value :: any, x, ...) :: any
+	self:set(math.min(self._value :: any, x, ...))
 	return self
 end
 
@@ -299,6 +310,8 @@ end
 	@within Val
 	@method max
 	Updates state to the largest value
+
+	Does not support force set
 
 	@param min number
 	@param max number
@@ -310,7 +323,7 @@ end
 	```
 ]=]
 function Val.max<T>(self: Val<T>, x: number, ...: number): Val<T>
-	self._value = math.max(self._value :: any, x, ...) :: any
+	self:set(math.max(self._value :: any, x, ...))
 	return self
 end
 
@@ -321,6 +334,7 @@ end
 
 	@param x number
 	@param ... number
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(3)
@@ -328,8 +342,8 @@ end
 	num:clamp(-2, 2) -- 4 < [-2, 2] -> 2
 	```
 ]=]
-function Val.clamp<T>(self: Val<T>, min: number, max: number): Val<T>
-	self._value = math.clamp(self._value :: any, min, max) :: any
+function Val.clamp<T>(self: Val<T>, min: number, max: number, forceSet: boolean?): Val<T>
+	self:set(math.clamp(self._value :: any, min, max), forceSet)
 	return self
 end
 
@@ -338,6 +352,7 @@ end
 	@method abs
 	Sets state to its absolute value
 
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(3)
@@ -346,8 +361,8 @@ end
 	num:abs() -- 4
 	```
 ]=]
-function Val.abs<T>(self: Val<T>): Val<T>
-	self._value = math.abs(self._value :: any) :: any
+function Val.abs<T>(self: Val<T>, forceSet: boolean?): Val<T>
+	self:set(math.abs(self._value :: any), forceSet)
 	return self
 end
 
@@ -356,6 +371,7 @@ end
 	@method floor
 	Rounds down state to the nearest integer
 
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(3)
@@ -366,8 +382,8 @@ end
 	num:floor() -- 3
 	```
 ]=]
-function Val.floor<T>(self: Val<T>): Val<T>
-	self._value = math.floor(self._value :: any) :: any
+function Val.floor<T>(self: Val<T>, forceSet: boolean?): Val<T>
+	self:set(math.floor(self._value :: any), forceSet)
 	return self
 end
 
@@ -376,6 +392,7 @@ end
 	@method ceil
 	Rounds up state to the nearest integer
 
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(3)
@@ -386,8 +403,8 @@ end
 	num:ceil() -- 4
 	```
 ]=]
-function Val.ceil<T>(self: Val<T>): Val<T>
-	self._value = math.ceil(self._value :: any) :: any
+function Val.ceil<T>(self: Val<T>, forceSet: boolean?): Val<T>
+	self:set(math.ceil(self._value :: any), forceSet)
 	return self
 end
 
@@ -396,6 +413,7 @@ end
 	@method round
 	Rounds state to the nearest integer
 
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(3)
@@ -406,8 +424,8 @@ end
 	num:round() -- 4
 	```
 ]=]
-function Val.round<T>(self: Val<T>): Val<T>
-	self._value = math.round(self._value :: any) :: any
+function Val.round<T>(self: Val<T>, forceSet: boolean?): Val<T>
+	self:set(math.round(self._value :: any), forceSet)
 	return self
 end
 
@@ -417,6 +435,7 @@ end
 	Rounds state to the nearest `unit`
 
 	@param unit number
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(3.3)
@@ -427,8 +446,8 @@ end
 	num:set(2) -- 2
 	```
 ]=]
-function Val.snap<T>(self: Val<T>, unit: number): Val<T>
-	self._value = math.round(self._value :: any / unit) * unit :: any
+function Val.snap<T>(self: Val<T>, unit: number, forceSet: boolean?): Val<T>
+	self:set(math.round(self._value :: any / unit) * unit, forceSet)
 	return self
 end
 
@@ -439,6 +458,7 @@ end
 
 	@param b number -- The ending value
 	@param t number -- The interpolation factor, typically between 0 and 1
+	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(3)
@@ -447,8 +467,8 @@ end
 	num:lerp(10, 0.4) -- 40% from 5 to 10 -> 7
 	```
 ]=]
-function Val.lerp<T>(self: Val<T>, b: number, t: number): Val<T>
-	self._value = math.lerp(self._value :: any, b, t) :: any
+function Val.lerp<T>(self: Val<T>, b: number, t: number, forceSet: boolean?): Val<T>
+	self:set(math.lerp(self._value :: any, b, t), forceSet)
 	return self
 end
 

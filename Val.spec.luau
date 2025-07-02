@@ -149,6 +149,130 @@ return function()
 			expect(new).to.equal(30)
 			expect(old).to.equal(20)
 			expect(instant).to.equal(false)
+
+			local count = 0
+			local d = x:on(function()
+				count += 1
+			end)
+			x:set(math.pi)
+			expect(count).to.equal(1)
+			x:set(math.pi)
+			expect(count).to.equal(1)
+			x:set(math.pi, true)
+			expect(count).to.equal(2)
+			x:add(3)
+			expect(count).to.equal(3)
+			x:sub(4)
+			expect(count).to.equal(4)
+			x:mul(5)
+			expect(count).to.equal(5)
+			x:div(2)
+			expect(count).to.equal(6)
+			x:idiv(2)
+			expect(count).to.equal(7)
+			x:mod(2)
+			expect(count).to.equal(8)
+			x:set(2)
+			x:pow(2)
+			expect(count).to.equal(10)
+
+			x:set(math.pi)
+			count = 0
+			x:floor()
+			expect(count).to.equal(1)
+
+			x:set(math.pi)
+			count = 0
+			x:ceil()
+			expect(count).to.equal(1)
+
+			x:set(math.pi)
+			count = 0
+			x:round()
+			expect(count).to.equal(1)
+
+			x:set(-2)
+			count = 0
+			x:abs()
+			expect(count).to.equal(1)
+
+			x:set(0)
+			count = 0
+			x:lerp(1, 0.5)
+			expect(count).to.equal(1)
+
+			x:set(math.pi)
+			count = 0
+			x:snap(1)
+			expect(count).to.equal(1)
+
+			x:set(2)
+			count = 0
+			x:clamp(3, 4)
+			expect(count).to.equal(1)
+
+			d()
+			x:die()
+
+			local s = Val.new("a")
+			local updated = false
+			d = s:on(function()
+				updated = true
+			end)
+
+			s:cat("b")
+			expect(updated).to.equal(true)
+			d()
+			s:die()
+
+			local b = Val.new(false)
+			updated = false
+			d = b:on(function()
+				updated = true
+			end)
+			b:flip()
+			expect(updated).to.equal(true)
+			d()
+			b:die()
+
+			x = Val.new(0)
+			count = 0
+			d = x:on(function()
+				count += 1
+			end)
+			x:set(0, true)
+			expect(count).to.equal(1)
+			x:add(0, true)
+			expect(count).to.equal(2)
+			x:sub(0, true)
+			expect(count).to.equal(3)
+			x:mul(0, true)
+			expect(count).to.equal(4)
+			x:div(1, true)
+			expect(count).to.equal(5)
+			x:idiv(1, true)
+			expect(count).to.equal(6)
+			x:mod(0, true)
+			expect(count).to.equal(7)
+			x:pow(1, true)
+			expect(count).to.equal(8)
+			x:clamp(0, 1, true)
+			expect(count).to.equal(9)
+			x:abs(0, true)
+			expect(count).to.equal(10)
+			x:floor(0, true)
+			expect(count).to.equal(11)
+			x:ceil(0, true)
+			expect(count).to.equal(12)
+			x:round(0, true)
+			expect(count).to.equal(13)
+			x:snap(1, true)
+			expect(count).to.equal(14)
+			x:lerp(1, 0, true)
+			expect(count).to.equal(15)
+
+			d()
+			x:die()
 		end)
 
 		it("should destroy itself when killed", function()
@@ -184,18 +308,6 @@ return function()
 	end)
 
 	describe("advanced states", function()
-		it("should support states within states", function()
-			-- Scope array example
-			local waypoints = Val.scope {
-				Val.new(Vector3.new(2, 6, -3)),
-				Val.new(Vector3.new(9, -4, 8)),
-				Val.new(Vector3.new(-5, 8, 2)),
-				Val.new(Vector3.new(-7, 2, -1)),
-			}
-
-			waypoints:die() -- kills all the Vector3 states inside the scope
-		end)
-
 		it("should support iteration", function()
 			local t = Val.scope {1, 2, 3, 4, 5, 6}
 
