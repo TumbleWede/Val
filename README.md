@@ -23,5 +23,4 @@ You can go over these features in-depth in the [documentation](https://tumblewed
 - Batched updates
 - Memory management
 - Built-in arithmetic & string operations
-- Strict type-safety
 - (Near) full customization of states
