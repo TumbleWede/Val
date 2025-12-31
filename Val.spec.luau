@@ -301,9 +301,9 @@ return function()
 				disconnect()
 			end).never.to.throw()
 
-			local x = Val.new(2)
-			x:Destroy()
-			expect(x:isdead()).to.equal(true)
+			local z = Val.new(2)
+			z:Destroy()
+			expect(z:isdead()).to.equal(true)
 		end)
 	end)
 
