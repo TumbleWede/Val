@@ -407,4 +407,21 @@ return function()
 			end
 		end)
 	end)
+
+	describe("batching states", function()
+		it("should only observe at the end of a batch", function()
+			local x = Val.new(1)
+			local disconnect
+			disconnect = x:on(function(new, old)
+				expect(new).to.equal(4)
+				expect(old).to.equal(1)
+				disconnect()
+			end)
+			Val.batch(function(set)
+				set(x, 2)
+				set(x, 3)
+				set(x, 4)
+			end)
+		end)
+	end)
 end
