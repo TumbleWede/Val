@@ -22,6 +22,17 @@ Val.__iter = function(self)
 end
 
 --[=[
+	@type Type<T> Val<T>
+	@within Val
+	An alias for `Val<T>` so you can write `Val.Type<T>` instead of `Val.Val<T>` in external scripts
+	```lua
+	local Val = require(path.to.Val)
+	local num: Val.Type<number> = Val.new(2.718)
+	```
+]=]
+export type Type<T> = Val<T>
+
+--[=[
 	@type Val<T> @metatable {_value: T, _listeners: {(T, T, boolean) -> ()}, _dependents: {Val<any>}, _disconnects: {[Val<any>]: () -> ()}?, _eval<U>: (((Val<U>) -> U) -> T)?, [any]: any}
 	@within Val
 	Here are the internals of a Val object! You really don't have to understand any of this to know how to use Val,
@@ -34,22 +45,42 @@ end
 export type Val<T> = typeof(setmetatable({} :: {
 	_value: T,
 	_listeners: {(T, T, boolean) -> ()},
-	_dependents: {any}, -- Type checker gets mad when I try to say Val<any>
+	_dependents: {any}, -- Type checker gets mad when I try to include a Val of another type
 	_disconnects: {[any]: () -> ()}?,
-	_eval: (((any) -> any) -> T)?,
-	[any]: any
-}, Val))
+	_eval: ((any) -> T)?,
 
---[=[
-	@type T<T> Val<T>
-	@within Val
-	An alias for `Val<T>` so you can write `Val.T<T>` instead of `Val.Val<T>` in external scripts
-	```lua
-	local Val = require(path.to.Val)
-	local num: Val.T<number> = Val.new(2.718)
-	```
-]=]
-export type T<T> = Val<T>
+	-- Allow type checking for method calls
+	set: (Val<T>, T, boolean?) -> Val<T>,
+	get: (Val<T>) -> T,
+	add: (Val<T>, any, boolean?) -> Val<T>,
+	sub: (Val<T>, any, boolean?) -> Val<T>,
+	mul: (Val<T>, any, boolean?) -> Val<T>,
+	div: (Val<T>, any, boolean?) -> Val<T>,
+	idiv: (Val<T>, any, boolean?) -> Val<T>,
+	mod: (Val<T>, any, boolean?) -> Val<T>,
+	pow: (Val<T>, any, boolean?) -> Val<T>,
+	cat: (Val<T>, any, boolean?) -> Val<T>,
+	flip: (Val<T>) -> Val<T>,
+	-- We can't enforce Val<number> due to type checker limitations
+	min: (Val<T>, ...number) -> Val<T>,
+	max: (Val<T>, ...number) -> Val<T>,
+	clamp: (Val<T>, number, number, boolean?) -> Val<T>,
+	abs: (Val<T>, boolean?) -> Val<T>,
+	floor: (Val<T>, boolean?) -> Val<T>,
+	ceil: (Val<T>, boolean?) -> Val<T>,
+	round: (Val<T>, boolean?) -> Val<T>,
+	snap: (Val<T>, number, boolean?) -> Val<T>,
+	lerp: (Val<T>, number, number, boolean?) -> Val<T>,
+	-- These methods can't be type checked because we have to include a Val of another type
+	-- eq: <U>(Val<T>, Val<U>) -> boolean,
+	-- lt: <U>(Val<T>, Val<U>) -> boolean,
+	-- le: <U>(Val<T>, Val<U>) -> boolean,
+	-- gt: <U>(Val<T>, Val<U>) -> boolean,
+	-- ge: <U>(Val<T>, Val<U>) -> boolean,
+
+	on: (Val<T>, (T, T, boolean) -> (), boolean?) -> (() -> ()),
+	[any]: any -- Allow for custom fields
+}, Val))
 
 -- Memory safety stuff
 local function trueClosure() return true end
@@ -135,7 +166,7 @@ end
 	```
 ]=]
 function Val.add<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value :: any + value, forceSet) -- Don't force number type safety in case the addition is a metamethod
+	Val.set(self, self._value :: any + value, forceSet) -- Don't force number type safety in case the addition is a metamethod
 	return self
 end
 
@@ -153,7 +184,7 @@ end
 	```
 ]=]
 function Val.sub<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value :: any - value, forceSet)
+	Val.set(self, self._value :: any - value, forceSet)
 	return self
 end
 
@@ -171,7 +202,7 @@ end
 	```
 ]=]
 function Val.mul<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value :: any * value, forceSet)
+	Val.set(self, self._value :: any * value, forceSet)
 	return self
 end
 
@@ -189,7 +220,7 @@ end
 	```
 ]=]
 function Val.div<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value :: any / value, forceSet)
+	Val.set(self, self._value :: any / value, forceSet)
 	return self
 end
 
@@ -207,7 +238,7 @@ end
 	```
 ]=]
 function Val.idiv<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value :: any // value, forceSet)
+	Val.set(self, self._value :: any // value, forceSet)
 	return self
 end
 
@@ -225,7 +256,7 @@ end
 	```
 ]=]
 function Val.mod<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value :: any % value, forceSet)
+	Val.set(self, self._value :: any % value, forceSet)
 	return self
 end
 
@@ -243,7 +274,7 @@ end
 	```
 ]=]
 function Val.pow<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value :: any ^ value, forceSet)
+	Val.set(self, self._value :: any ^ value, forceSet)
 	return self
 end
 
@@ -261,7 +292,7 @@ end
 	```
 ]=]
 function Val.cat<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value :: any .. value, forceSet)
+	Val.set(self, self._value :: any .. value, forceSet)
 	return self
 end
 
@@ -280,7 +311,7 @@ end
 	```
 ]=]
 function Val.flip<T>(self: Val<T>): Val<T>
-	self:set(not self._value)
+	Val.set(self, not self._value :: any)
 	return self
 end
 
@@ -300,7 +331,7 @@ end
 	```
 ]=]
 function Val.min(self: Val<number>, ...: number): Val<number>
-	self:set(math.min(self._value, ...))
+	Val.set(self, math.min(self._value, ...))
 	return self
 end
 
@@ -320,7 +351,7 @@ end
 	```
 ]=]
 function Val.max(self: Val<number>, ...: number): Val<number>
-	self:set(math.max(self._value, ...))
+	Val.set(self, math.max(self._value, ...))
 	return self
 end
 
@@ -340,7 +371,7 @@ end
 	```
 ]=]
 function Val.clamp(self: Val<number>, min: number, max: number, forceSet: boolean?): Val<number>
-	self:set(math.clamp(self._value, min, max), forceSet)
+	Val.set(self, math.clamp(self._value, min, max), forceSet)
 	return self
 end
 
@@ -359,7 +390,7 @@ end
 	```
 ]=]
 function Val.abs(self: Val<number>, forceSet: boolean?): Val<number>
-	self:set(math.abs(self._value), forceSet)
+	Val.set(self, math.abs(self._value), forceSet)
 	return self
 end
 
@@ -380,7 +411,7 @@ end
 	```
 ]=]
 function Val.floor(self: Val<number>, forceSet: boolean?): Val<number>
-	self:set(math.floor(self._value), forceSet)
+	Val.set(self, math.floor(self._value), forceSet)
 	return self
 end
 
@@ -401,7 +432,7 @@ end
 	```
 ]=]
 function Val.ceil(self: Val<number>, forceSet: boolean?): Val<number>
-	self:set(math.ceil(self._value), forceSet)
+	Val.set(self, math.ceil(self._value), forceSet)
 	return self
 end
 
@@ -422,7 +453,7 @@ end
 	```
 ]=]
 function Val.round(self: Val<number>, forceSet: boolean?): Val<number>
-	self:set(math.round(self._value), forceSet)
+	Val.set(self, math.round(self._value), forceSet)
 	return self
 end
 
@@ -444,7 +475,7 @@ end
 	```
 ]=]
 function Val.snap(self: Val<number>, unit: number, forceSet: boolean?): Val<number>
-	self:set(math.round(self._value / unit) * unit, forceSet)
+	Val.set(self, math.round(self._value / unit) * unit, forceSet)
 	return self
 end
 
@@ -465,7 +496,7 @@ end
 	```
 ]=]
 function Val.lerp(self: Val<number>, b: number, t: number, forceSet: boolean?): Val<number>
-	self:set(math.lerp(self._value, b, t), forceSet)
+	Val.set(self, math.lerp(self._value, b, t), forceSet)
 	return self
 end
 
@@ -608,7 +639,7 @@ function Val.on<T>(self: Val<T>, callback: (T, T, boolean) -> (), callImmediatel
 		callback(self._value, self._value, true)
 	end
 
-	return function()
+	return function() -- Disconnect callback
 		if Val.isdead(self) then return end -- In case the state was destroyed
 		local index = table.find(self._listeners, callback)
 		if index == nil then return end -- You just never know...
@@ -640,7 +671,7 @@ end
 	yep:die(true) -- nope is still alive
 	```
 ]=]
-function Val.die<T>(self: Val<T>, shallow: boolean?): nil
+function Val.die<T>(self: Val<T>, shallow: boolean?)
 	if Val.isdead(self) then return end -- State is already dead (may happen due to coupled states causing memory shenanigans)
 
 	for index = #self._dependents, 1, -1 do
@@ -690,7 +721,7 @@ function Val.die<T>(self: Val<T>, shallow: boolean?): nil
 	end
 
 	setmetatable(self :: any, badMT)
-	return nil
+	return
 end
 
 
@@ -741,10 +772,10 @@ end
 	print(area:get()) -- 20 * 20 -> 400
 	```
 ]=]
-function Val.calc<T>(eval: ((Val<any>) -> any) -> T): Val<T>
+function Val.calc<T>(eval: (<U>(Val<U>) -> U) -> T): Val<T>
 	local dependencies: {Val<any>} = {}
 
-	local function get<U>(self: Val<U>)
+	local function get<U>(self: Val<U>): U
 		if not table.find(dependencies, self) then
 			table.insert(dependencies, self)
 		end
@@ -764,11 +795,11 @@ function Val.calc<T>(eval: ((Val<any>) -> any) -> T): Val<T>
 	for _, state in ipairs(dependencies) do
 		table.insert(state._dependents, self)
 		self._disconnects[state] = state:on(function()
-			Val.set(self, self._eval(Val.get))
+			Val.set(self :: Val<T>, self._eval(Val.get))
 		end)
 	end
 
-	return self
+	return self :: Val<T>
 end
 
 --[=[
@@ -795,7 +826,7 @@ end
 	end) -- The area is 30
 	```
 ]=]
-function Val.batch(fn: ((Val<any>, any) -> ()) -> ())
+function Val.batch(fn: (<U>(Val<U>, U) -> ()) -> ())
 	local oldValues: {[Val<any>]: any} = {}
 
 	local function set<T>(self: Val<T>, value: T)
@@ -925,7 +956,7 @@ function Val.copy<T>(self: Val<T>): Val<T>
 	end
 
 	-- Restore keys from self
-	for key, value in self do
+	for key, value in self :: any do
 		clone[key] = value
 	end
 
