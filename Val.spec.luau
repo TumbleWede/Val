@@ -347,6 +347,13 @@ return function()
 			expect(x == y).to.equal(false)
 		end)
 
+		it("should clone states with custom fields", function()
+			local x = Val.new(2)
+			x.Test = true
+			local y = x:copy()
+			expect(y.Test).to.equal(true)
+		end)
+
 		it("should clone computeds", function()
 			local a = Val.new(3)
 			local b = Val.new(4)
