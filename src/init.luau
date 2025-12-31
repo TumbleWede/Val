@@ -813,7 +813,7 @@ function Val.batch(fn: ((Val<any>, any) -> ()) -> ())
 	for state, old in oldValues do
 		local new = state._value
 		for _, callback in ipairs(state._listeners) do
-			callback(old, new, false)
+			callback(new, old, false)
 		end
 	end
 end
