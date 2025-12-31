@@ -135,7 +135,7 @@ end
 	```
 ]=]
 function Val.add<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value + value, forceSet)
+	self:set(self._value :: any + value, forceSet) -- Don't force number type safety in case the addition is a metamethod
 	return self
 end
 
@@ -153,7 +153,7 @@ end
 	```
 ]=]
 function Val.sub<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value - value, forceSet)
+	self:set(self._value :: any - value, forceSet)
 	return self
 end
 
@@ -171,7 +171,7 @@ end
 	```
 ]=]
 function Val.mul<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value * value, forceSet)
+	self:set(self._value :: any * value, forceSet)
 	return self
 end
 
@@ -189,7 +189,7 @@ end
 	```
 ]=]
 function Val.div<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value / value, forceSet)
+	self:set(self._value :: any / value, forceSet)
 	return self
 end
 
@@ -207,7 +207,7 @@ end
 	```
 ]=]
 function Val.idiv<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value // value, forceSet)
+	self:set(self._value :: any // value, forceSet)
 	return self
 end
 
@@ -225,7 +225,7 @@ end
 	```
 ]=]
 function Val.mod<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value % value, forceSet)
+	self:set(self._value :: any % value, forceSet)
 	return self
 end
 
@@ -243,7 +243,7 @@ end
 	```
 ]=]
 function Val.pow<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value ^ value, forceSet)
+	self:set(self._value :: any ^ value, forceSet)
 	return self
 end
 
@@ -261,7 +261,7 @@ end
 	```
 ]=]
 function Val.cat<T>(self: Val<T>, value: any, forceSet: boolean?): Val<T>
-	self:set(self._value .. value, forceSet)
+	self:set(self._value :: any .. value, forceSet)
 	return self
 end
 
@@ -291,9 +291,7 @@ end
 
 	Does not support force set
 
-	@param x number
 	@param ... number
-	@param forceSet boolean?
 	@return Val
 	```lua
 	local num = Val.new(5)
@@ -301,8 +299,8 @@ end
 	num:min(2, 4, 6) -- 2 < 4 < 5 < 6 -> 2
 	```
 ]=]
-function Val.min<T>(self: Val<T>, x: number, ...: number): Val<T>
-	self:set(math.min(self._value :: any, x, ...))
+function Val.min(self: Val<number>, ...: number): Val<number>
+	self:set(math.min(self._value, ...))
 	return self
 end
 
@@ -313,8 +311,7 @@ end
 
 	Does not support force set
 
-	@param min number
-	@param max number
+	@param ... number
 	@return Val
 	```lua
 	local num = Val.new(5)
@@ -322,8 +319,8 @@ end
 	num:max(2, 4, 6) -- 2 < 4 < 5 < 6 -> 6
 	```
 ]=]
-function Val.max<T>(self: Val<T>, x: number, ...: number): Val<T>
-	self:set(math.max(self._value :: any, x, ...))
+function Val.max(self: Val<number>, ...: number): Val<number>
+	self:set(math.max(self._value, ...))
 	return self
 end
 
@@ -332,8 +329,8 @@ end
 	@method clamp
 	Clamps state between `min` and `max`
 
-	@param x number
-	@param ... number
+	@param min number
+	@param max number
 	@param forceSet boolean?
 	@return Val
 	```lua
@@ -342,8 +339,8 @@ end
 	num:clamp(-2, 2) -- 4 < [-2, 2] -> 2
 	```
 ]=]
-function Val.clamp<T>(self: Val<T>, min: number, max: number, forceSet: boolean?): Val<T>
-	self:set(math.clamp(self._value :: any, min, max), forceSet)
+function Val.clamp(self: Val<number>, min: number, max: number, forceSet: boolean?): Val<number>
+	self:set(math.clamp(self._value, min, max), forceSet)
 	return self
 end
 
@@ -361,8 +358,8 @@ end
 	num:abs() -- 4
 	```
 ]=]
-function Val.abs<T>(self: Val<T>, forceSet: boolean?): Val<T>
-	self:set(math.abs(self._value :: any), forceSet)
+function Val.abs(self: Val<number>, forceSet: boolean?): Val<number>
+	self:set(math.abs(self._value), forceSet)
 	return self
 end
 
@@ -382,8 +379,8 @@ end
 	num:floor() -- 3
 	```
 ]=]
-function Val.floor<T>(self: Val<T>, forceSet: boolean?): Val<T>
-	self:set(math.floor(self._value :: any), forceSet)
+function Val.floor(self: Val<number>, forceSet: boolean?): Val<number>
+	self:set(math.floor(self._value), forceSet)
 	return self
 end
 
@@ -403,8 +400,8 @@ end
 	num:ceil() -- 4
 	```
 ]=]
-function Val.ceil<T>(self: Val<T>, forceSet: boolean?): Val<T>
-	self:set(math.ceil(self._value :: any), forceSet)
+function Val.ceil(self: Val<number>, forceSet: boolean?): Val<number>
+	self:set(math.ceil(self._value), forceSet)
 	return self
 end
 
@@ -424,8 +421,8 @@ end
 	num:round() -- 4
 	```
 ]=]
-function Val.round<T>(self: Val<T>, forceSet: boolean?): Val<T>
-	self:set(math.round(self._value :: any), forceSet)
+function Val.round(self: Val<number>, forceSet: boolean?): Val<number>
+	self:set(math.round(self._value), forceSet)
 	return self
 end
 
@@ -446,8 +443,8 @@ end
 	num:set(2) -- 2
 	```
 ]=]
-function Val.snap<T>(self: Val<T>, unit: number, forceSet: boolean?): Val<T>
-	self:set(math.round(self._value :: any / unit) * unit, forceSet)
+function Val.snap(self: Val<number>, unit: number, forceSet: boolean?): Val<number>
+	self:set(math.round(self._value / unit) * unit, forceSet)
 	return self
 end
 
@@ -467,8 +464,8 @@ end
 	num:lerp(10, 0.4) -- 40% from 5 to 10 -> 7
 	```
 ]=]
-function Val.lerp<T>(self: Val<T>, b: number, t: number, forceSet: boolean?): Val<T>
-	self:set(math.lerp(self._value :: any, b, t), forceSet)
+function Val.lerp(self: Val<number>, b: number, t: number, forceSet: boolean?): Val<number>
+	self:set(math.lerp(self._value, b, t), forceSet)
 	return self
 end
 
