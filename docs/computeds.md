@@ -70,3 +70,6 @@ s:set(20)
 -- Side length set to 20
 -- Area updated to 400
 ```
+:::note
+Due to typechecking limitations, `Val.calc` will return `Val<any>`, so the computed will not have an inferred generic type. To fix this, you can simply typecast the computed to a `Val.Type<T>`
+:::
