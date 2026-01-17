@@ -692,7 +692,7 @@ function Val.die<T>(self: Val<T>, shallow: boolean?)
 	end
 	
 	self._disconnects = nil
-	self["set"] = nil
+	self["set"] = nil :: any
 
 	-- Destroy value (if it is a state)
 	if not shallow then
@@ -760,6 +760,7 @@ end
 	get (Val<T>) -> T -- inside the eval function, call get(state) instead of state:get() so dependent states are detected
 	
 	Note: If a dependent state is destroyed, then so will the computed
+	Note: Due to typechecking limitations, Val.calc will return Val<any>, so you may need to cast it to a Val.Type<T> explicitly
 	@return Val -- an immutable state (Val:set() is disabled to enforce reactivity)
 	```lua
 	local length = Val.new(10)
@@ -772,7 +773,7 @@ end
 	print(area:get()) -- 20 * 20 -> 400
 	```
 ]=]
-function Val.calc<T>(eval: (<U>(Val<U>) -> U) -> T): Val<T>
+function Val.calc(eval: (get: <U>(Val<U>) -> U) -> any): Val<any>
 	local dependencies: {Val<any>} = {}
 
 	local function get<U>(self: Val<U>): U
@@ -795,11 +796,11 @@ function Val.calc<T>(eval: (<U>(Val<U>) -> U) -> T): Val<T>
 	for _, state in ipairs(dependencies) do
 		table.insert(state._dependents, self)
 		self._disconnects[state] = state:on(function()
-			Val.set(self :: Val<T>, self._eval(Val.get))
+			Val.set(self :: Val<any>, self._eval(Val.get))
 		end)
 	end
 
-	return self :: Val<T>
+	return self :: Val<any>
 end
 
 --[=[
@@ -826,7 +827,7 @@ end
 	end) -- The area is 30
 	```
 ]=]
-function Val.batch(fn: (<U>(Val<U>, U) -> ()) -> ())
+function Val.batch(fn: (set: <U>(Val<U>, U) -> ()) -> ())
 	local oldValues: {[Val<any>]: any} = {}
 
 	local function set<T>(self: Val<T>, value: T)
